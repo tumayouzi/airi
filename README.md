@@ -21,12 +21,12 @@ Jenkins用Androidビルドスクリプト [愛理](http://palette.clearrave.co.j
     前処理を実施するスクリプト
     - 成果物を保存するディレクトリを作成  
     - toot
- - `build.sh`
+ - `build.sh`  
     実際にビルドをするスクリプト
     - `make clean`
     - ccacheのキャッシュ量設定
     - ビルド
- - `post_process.sh`
+ - `post_process.sh`  
     後処理を実施するスクリプト
     - 成果物のコピー
         - log
@@ -52,7 +52,7 @@ Jenkins用Androidビルドスクリプト [愛理](http://palette.clearrave.co.j
     - Name `START_BUILD_DATETIME`
     - Pattern `yyyy-MM-dd HH:mm:ss`
     - Shift timestamp `- 0 days 0 hours 0 minutes`
-- PUSHBULLET_TOKEN
+- `PUSHBULLET_TOKEN`  
     [Mask Passwords](https://plugins.jenkins.io/mask-passwords/)に依存。  
     このプラグインを追加後、プロジェクト→`設定`→`ビルドのパラメータ化`の`パラメータの追加`に`パスワード`が現れるので追加する。  
     `デフォルト値`にPushbulletで発行したAPI keyを入力しておく。
@@ -87,8 +87,8 @@ Jenkins用Androidビルドスクリプト [愛理](http://palette.clearrave.co.j
 - `BUILD_TYPE`  
     型:選択　または　テキスト  
     FlokoROMをどのタイプでビルドするか指定する。
-    - UNOFFICAL
-    - OFFICAL
+    - UNOFFICIAL
+    - OFFICIAL
     - EXPERIMENTAL
     - 別に上記以外の文字列を好きに入れて大丈夫(いいのか？)
 - `TOOT_TAG`  
@@ -96,6 +96,55 @@ Jenkins用Androidビルドスクリプト [愛理](http://palette.clearrave.co.j
     tootするときのタグを指定する。`#`からはじめる  
     例:`#AndroidBuildBattle`
 
+## pipeline scriptの例
+
+```
+pipeline {
+   agent {
+       label 'fate'
+   }
+
+   stages {
+        stage('前処理') {
+            steps {
+                dir('/your/script/dir/airi'){
+                    sh './pre_process.sh'
+                }
+            }
+        }
+        
+        stage('Build') {
+            steps {
+                script {
+                    try {
+                        dir('/your/script/dir/airi'){
+                            sh './build.sh'
+                        }
+                    } catch(Exception e) {
+                        currentBuild.result = 'FAILURE'
+                    }
+                }
+            }
+        }
+        
+        stage('後処理') {
+            steps {
+                script {
+                    if (currentBuild.result == "FAILURE"){
+                        dir('/your/script/dir/airi'){
+                            sh './post_process.sh false'
+                        }
+                    } else {
+                        dir('/your/script/dir/airi'){
+                            sh './post_process.sh true'
+                        }
+                    }
+                }
+            }
+        }
+   }
+}
+```
 
 ## ライセンス
 

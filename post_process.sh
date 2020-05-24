@@ -95,7 +95,7 @@ elif [ "${build_status}" = "false" ]; then
 
     # toot to mastodon
     if [ "${TOOT}" = "true" ]; then
-        echo "📣${DEVICE} 向け ${source} の ${BUILD_TYPE} のビルドに失敗しました :very_sad: ビルド時間: ${build_hms} ${BUILD_URL} ${TOOT_TAG}" | toot --visibility unlisted
+        echo "📣${DEVICE} 向け ${source} の ${BUILD_TYPE} ビルドに失敗しました :very_sad: ビルド時間: ${build_hms} ${BUILD_URL} ${TOOT_TAG}" | toot --visibility unlisted
     fi
 fi
 

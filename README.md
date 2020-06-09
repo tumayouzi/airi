@@ -101,7 +101,7 @@ Jenkins用Androidビルドスクリプト [愛理](http://palette.clearrave.co.j
 ```
 pipeline {
    agent {
-       label 'fate'
+       label 'master'
    }
 
    stages {
@@ -116,30 +116,28 @@ pipeline {
         stage('Build') {
             steps {
                 script {
-                    try {
-                        dir('/your/script/dir/airi'){
-                            sh './build.sh'
-                        }
-                    } catch(Exception e) {
-                        currentBuild.result = 'FAILURE'
+                    dir('/your/script/dir/airi'){
+                        sh './build.sh'
                     }
                 }
             }
         }
-        
-        stage('後処理') {
-            steps {
-                script {
-                    if (currentBuild.result == "FAILURE"){
-                        dir('/your/script/dir/airi'){
-                            sh './post_process.sh false'
-                        }
-                    } else {
-                        dir('/your/script/dir/airi'){
-                            sh './post_process.sh true'
-                        }
-                    }
-                }
+   }
+   
+   post {
+        success {
+            dir('/your/script/dir/airi'){
+                sh './post_process.sh true'
+            }
+            sh 'ln -fs ${ROM_DIR}/${DEVICE} ./out_tmp'
+            archiveArtifacts "out_tmp/*-${DEVICE}-${BUILD_TIMESTAMP}-${BUILD_TYPE}.zip"
+            archiveArtifacts "out_tmp/*-${DEVICE}-${BUILD_TIMESTAMP}-${BUILD_TYPE}.zip.md5sum"
+            archiveArtifacts "out_tmp/changelog/changelog_*-${DEVICE}-${BUILD_TIMESTAMP}-${BUILD_TYPE}.txt"
+            sh 'unlink out_tmp'
+        }
+        failure {
+            dir('/your/script/dir/airi'){
+                sh './post_process.sh false'
             }
         }
    }
